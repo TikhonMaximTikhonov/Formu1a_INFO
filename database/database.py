@@ -1,10 +1,8 @@
-import sqlalchemy.ext.declarative as dec
 import sqlalchemy.orm as orm
-import sqlalchemy
-
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-SqlAlchemyBase = dec.declarative_base()
+from database.tables import *
 
 
 class DataBase:
@@ -23,29 +21,34 @@ class DataBase:
     def create_session(self) -> Session:
         return self.factory()
 
+    # << Season page >>
+    def get_seasons(self) -> list:
+        session = self.create_session()
+        seasons_data = session.query(Seasons).order_by(Seasons.id.desc())
+        return [season_data.id for season_data in seasons_data]
 
-# << Static bases >>
+    # << statistic_type >>
 
-class Points(SqlAlchemyBase):
-    __tablename__ = "points"
-    type_of_race = sqlalchemy.Column(sqlalchemy.String, primary_key=True, nullable=False)
-    position = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, nullable=False)
-    points = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    def get_season_statistic(self, season_id: int) -> list:
+        session = self.create_session()
+        try:
+            race_count = session.query(Seasons).filter(Seasons.id == season_id)[0].race_count
+        except IndexError:
+            race_count = "Error: empty base"
+        try:
+            driver_leader = session.query(
+                Drivers.reduction.label("reduction"),
+                func.sum(Points.points).label("points_sum")
+            ).join(
+                Results, Drivers.id == Results.id_driver
+            ).join(
+                Races, Results.id_race == Races.id
+            ).join(
+                Points, Races.race_type == Points.race_type
+            ).group_by(Drivers.id).order_by(func.sum(Points.points))
+        except IndexError:
+            driver_leader = "Не выявлен"
 
-    def __init__(self, type_of_race: str, position: int, points: str):
-        self.type_of_race = type_of_race
-        self.position = position
-        self.points = points
+        print(driver_leader)
 
-
-class Season(SqlAlchemyBase):
-    __tablename__ = "seasons"
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, nullable=False, unique=True)
-    race_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-
-    def __init__(self, season_id: int, race_count: int):
-        self.id = season_id
-        self.race_count = race_count
-
-
-# << Updated bases >>
+        return [season_id, race_count]
