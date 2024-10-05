@@ -1,14 +1,15 @@
+import asyncio
+
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-import asyncio
 from json import loads
 
 from states import User
 from keyboards import *
 from database.database import DataBase
-
+from parser.parser import *
 
 TOKEN = "7992264590:AAFcgIUuG-GWUhsKJGGk6ZDkBvVmyEbcgec"
 
@@ -37,6 +38,13 @@ async def statistic_type_choice(callback: CallbackQuery, state: FSMContext):
     )
 
 
+@dp.message(F.text.contains("/update"))
+async def update_info(message: Message):
+    await message.answer(
+        parse_season(message.text.split()[1])
+    )
+
+
 async def main():
     await dp.start_polling(bot)
 
@@ -47,5 +55,5 @@ if __name__ == '__main__':
 
     data_base = DataBase("../database/database.db")
     print("Bot start!")
-    data_base.get_season_statistic(2024)
-    # asyncio.run(main())
+    # data_base.get_season_statistic(2024)
+    asyncio.run(main())

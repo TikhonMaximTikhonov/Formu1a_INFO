@@ -21,7 +21,25 @@ class DataBase:
     def create_session(self) -> Session:
         return self.factory()
 
+    # << Data check >>
+
+    def check_season(self, season: int) -> bool:
+        session = self.create_session()
+        return session.query(Seasons).filter(Seasons.id == season).first is not None
+
+    # def check_race(self, id_season, id_track):
+
+    # << Data init >>
+
+    def save_seasons(self, season: int, race_count=0) -> int:
+        session = self.create_session()
+        if not self.check_season(season):
+            session.add(Seasons(season, race_count))
+            session.commit()
+        return season
+
     # << Season page >>
+
     def get_seasons(self) -> list:
         session = self.create_session()
         seasons_data = session.query(Seasons).order_by(Seasons.id.desc())

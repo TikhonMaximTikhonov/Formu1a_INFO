@@ -1,6 +1,9 @@
 import sqlalchemy
 import sqlalchemy.ext.declarative as dec
 
+from sqlalchemy import Column
+from sqlalchemy import String, Integer
+
 from datetime import date, datetime, time
 
 SqlAlchemyBase = dec.declarative_base()
@@ -10,9 +13,9 @@ SqlAlchemyBase = dec.declarative_base()
 
 class Points(SqlAlchemyBase):
     __tablename__ = "points"
-    race_type = sqlalchemy.Column(sqlalchemy.String, primary_key=True, nullable=False)
-    position = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, nullable=False)
-    points = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    race_type = Column(String, primary_key=True, nullable=False)
+    position = Column(Integer, primary_key=True, nullable=False)
+    points = Column(String, nullable=False)
 
     def __init__(self, type_of_race: str, position: int, points: str):
         self.type_of_race = type_of_race
@@ -35,14 +38,23 @@ class Tracks(SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     length = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
-    turn_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     debut = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
 
-    def __init__(self, name: str, length: int, turn_count: int, debut: date):
+    def __init__(self, name: str, length: int, debut: date):
         self.name = name
         self.length = length
-        self.turn_count = turn_count
         self.debut = debut
+
+
+class GrandPrix(SqlAlchemyBase):
+    __tablename__ = "grand_prixs"
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    turn_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
+
+    def __init__(self, name: str, turn_count: int):
+        self.name = name
+        self.turn_count = turn_count
 
 
 class Teams(SqlAlchemyBase):
@@ -90,6 +102,7 @@ class Races(SqlAlchemyBase):
     id_season = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     id_track = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     race_type = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    # Тесты, свободные практики, квалификация, спринтофикация, спринт, гонка
     event_date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
 
     def __init__(self, id_season: int, id_track: int, race_type: str, event_date: datetime):
